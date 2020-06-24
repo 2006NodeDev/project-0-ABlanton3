@@ -5,7 +5,7 @@ import {authorizationMiddleware} from '../middleware/authorization-middleware'
 
 export const userRouter = express.Router()
 
-userRouter.use(authenticationMiddleware)// doesn't technically exist yet, going to work on next
+userRouter.use(authenticationMiddleware)
 
 //find users
 
@@ -13,33 +13,39 @@ userRouter.get('/', authorizationMiddleware(['admin']), (req:Request,res:Respons
     res.json(users)
 })
 
+//find user by ID number
 userRouter.get('/:id', authorizationMiddleware(['admin', 'finance-manager']), (req:Request, res:Response)=>{//figure out how to do basically userId===userId
     let {id} = req.params
     if(isNaN(+id)){
-        // send a response telling them they need to give us a number
-        res.status(400).send('Id needs to be a number')// the error way is better because it scales easier, fewer places you have to change code if you want to refactor
+        res.status(400).send('ID must be a number')
     } else {
         let found = false
         for(const user of users){
             if(user.userId === +id){
-                res.json(user)// successfully foundthe user based on id
+                res.json(user)
                 found = true
             }
         }
         if(!found){
-            res.status(404).send('User Not Found')//the id doesn't exist
+            res.status(404).send('User Not Found')
         }
     }
 })
 
+//update user
+/*userRouter.patch('/users', function (['admin']), (req:Request, res:Response)=>{
+    let {id} = req.params
+})*/
+
+//to be replaced later with a real database
 export let users:User[] =[
     {
         userId: 1,
             username: 'admin123',
             password: 'password', //passwords should be stronger than this in a real situation
-            firstName: 'Leia',
-            lastName: 'Organa',
-            email: 'prin.leia@alderann.com',
+            firstName: 'Arthur',
+            lastName: 'Dent',
+            email: 'dent.arthur@earth.com',
             role: {
                 roleId: 1,
                 role: `admin`
@@ -48,11 +54,11 @@ export let users:User[] =[
     },
     {
         userId: 2,
-        username: 'lcalrissian',
+        username: 'improbable.tricia',
         password: 'password', //passwords should be stronger than this in a real situation
-        firstName: 'Lando',
-        lastName: 'Calrissian',
-        email: 'general.calrissian@cloudcity.com',
+        firstName: 'Trillian',
+        lastName: 'Astra',
+        email: 't.astra@earth.com',
         role: {
             roleId: 2,
             role: `finance-manager`
@@ -60,11 +66,11 @@ export let users:User[] =[
     },
     {
         userId: 3,
-        username: 'lukeskywlkr',
+        username: 'frdprfct',
         password: 'password', //passwords should be stronger than this in a real situation
-        firstName: 'Luke',
-        lastName: 'Skywalker',
-        email: 'skywalker.luke@tatooine.com',
+        firstName: 'Ford',
+        lastName: 'Prefect',
+        email: 'ford.prefect@betelgeuseV.com',
         role: {
             roleId: 3,
             role: `employee`
@@ -72,11 +78,11 @@ export let users:User[] =[
     },
     {
         userId: 4,
-        username: 'nerf-herder',
+        username: 'presidentZ',
         password: 'password', //passwords should be stronger than this in a real situation
-        firstName: 'Han',
-        lastName: 'Solo',
-        email: 'millenniumfalcon@corellia.com',
+        firstName: 'Zaphod',
+        lastName: 'Beeblebrox',
+        email: 'president.beeblebrox@betelgeuseV.com',
         role: {
             roleId: 3,
             role: `employee`

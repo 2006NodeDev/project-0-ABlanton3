@@ -1,12 +1,16 @@
 import express, { Request, Response } from 'express'
 import { InvalidCredentialsError } from './errors/InvalidCredentialsError';
 import { userRouter, users } from './routers/user-router';
-
+import { sessionMiddleware } from './middleware/session-middleware';
 
 const app = express()//get completed app
 
+app.use(sessionMiddleware)
+
+//redirects all /users request to the router
 app.use('/users', userRouter)
 
+//let users login to receive authentication
 app.post('/login',(req:Request, res:Response)=>{
     let username = req.body.username
     let password = req.body.password
