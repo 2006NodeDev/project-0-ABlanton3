@@ -1,5 +1,5 @@
 {
-  "name": "ersblanton",
+  "name": "hitchhiker_reimbursement",
   "version": "1.0.0",
   "description": "employee reimbursement system",
   "main": "src/index.ts",

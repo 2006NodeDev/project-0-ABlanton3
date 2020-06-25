@@ -33,9 +33,11 @@ userRouter.get('/:id', authorizationMiddleware(['admin', 'finance-manager']), (r
 })
 
 //update user
-/*userRouter.patch('/users', function (['admin']), (req:Request, res:Response)=>{
-    let {id} = req.params
-})*/
+userRouter.patch('/', authorizationMiddleware(['admin']), authenticationMiddleware, (req: Request, res:Response)=>{
+    const user = users.find(val => val.userId === Number(req.params.id));
+    user.username = req.body.name;
+    return res.json({message: "Updated"})
+})
 
 //to be replaced later with a real database
 export let users:User[] =[
