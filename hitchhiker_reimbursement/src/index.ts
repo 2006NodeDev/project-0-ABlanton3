@@ -2,19 +2,25 @@ import express, { Request, Response } from 'express'
 import { InvalidCredentialsError } from './errors/InvalidCredentialsError';
 import { userRouter, users } from './routers/user-router';
 import { sessionMiddleware } from './middleware/session-middleware';
+import { loggingMiddleware } from './middleware/logging-middleware';
 
-const app = express()//get completed app
+const app = express()
+
+app.use(express.json)
+
+app.use(loggingMiddleware)
 
 app.use(sessionMiddleware)
 
-//redirects all /users request to the router
 app.use('/users', userRouter)
 
-//let users login to receive authentication
-app.post('/login',(req:Request, res:Response)=>{
-    let username = req.body.username
-    let password = req.body.password
+//do I want a reimbursements router?? something to ponder
 
+
+app.post('/login',(req:Request, res:Response)=>{
+    let {username, 
+    password} = req.body
+    
     if(!username || !password){
         throw new InvalidCredentialsError()
     } else {
@@ -30,6 +36,15 @@ app.post('/login',(req:Request, res:Response)=>{
             throw new InvalidCredentialsError() //not sure if this is supposed to be the same as the one above.
 
         }
+    }
+})
+
+app.use((err, req, res, next) =>{
+    if (err.statusCode){
+        res.status(err.statusCode).send(err.message)
+    }else{
+        console.log(err)
+        res.status(500).send('Something went wrong. Don\'t panic')
     }
 })
 

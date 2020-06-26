@@ -7,7 +7,7 @@ export const userRouter = express.Router()
 
 userRouter.use(authenticationMiddleware)
 
-//find users
+
 
 userRouter.get('/', authorizationMiddleware(['admin']), (req:Request,res:Response,next:NextFunction)=>{
     res.json(users)
