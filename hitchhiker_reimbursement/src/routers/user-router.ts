@@ -2,6 +2,7 @@ import express, {Request, Response, NextFunction} from 'express'
 import {User} from '../models/User'
 import {authenticationMiddleware} from '../middleware/authentication-middleware'
 import {authorizationMiddleware} from '../middleware/authorization-middleware'
+import { getAllUsers } from '../daos/user-dao'
 
 export const userRouter = express.Router()
 
@@ -9,8 +10,13 @@ userRouter.use(authenticationMiddleware)
 
 
 
-userRouter.get('/', authorizationMiddleware(['admin']), (req:Request,res:Response,next:NextFunction)=>{
-    res.json(users)
+userRouter.get('/',  async (req:Request,res:Response,next:NextFunction)=>{
+        try{
+            let allUsers = await getAllUsers()//thinking in abstraction
+            res.json(allUsers)
+        } catch(e){
+            next(e)
+        }
 })
 
 //find user by ID number
