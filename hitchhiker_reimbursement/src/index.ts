@@ -3,6 +3,7 @@ import { InvalidCredentialsError } from './errors/InvalidCredentialsError';
 import { userRouter, users } from './routers/user-router';
 import { sessionMiddleware } from './middleware/session-middleware';
 import { loggingMiddleware } from './middleware/logging-middleware';
+import { authorizationMiddleware } from './middleware/authorization-middleware';
 
 const app = express()
 
@@ -17,10 +18,10 @@ app.use('/users', userRouter)
 //do I want a reimbursements router?? something to ponder
 
 
-app.post('/login',(req:Request, res:Response)=>{
+app.post('/login',authorizationMiddleware,(req:Request, res:Response)=>{
     let {username, 
     password} = req.body
-    
+
     if(!username || !password){
         throw new InvalidCredentialsError()
     } else {
