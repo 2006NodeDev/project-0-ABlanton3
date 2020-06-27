@@ -1,8 +1,8 @@
 import express, {Request, Response, NextFunction} from 'express'
-import {User} from '../models/User'
+//import {User} from '../models/User'
 import {authenticationMiddleware} from '../middleware/authentication-middleware'
 import {authorizationMiddleware} from '../middleware/authorization-middleware'
-import { getAllUsers } from '../daos/user-dao'
+import { getAllUsers, getUserById } from '../daos/user-dao'
 
 export const userRouter = express.Router()
 
@@ -10,9 +10,9 @@ userRouter.use(authenticationMiddleware)
 
 
 
-userRouter.get('/',  async (req:Request,res:Response,next:NextFunction)=>{
+userRouter.get('/', authorizationMiddleware(['Admin, finance-manager']), async (req:Request,res:Response,next:NextFunction)=>{
         try{
-            let allUsers = await getAllUsers()//thinking in abstraction
+            let allUsers = await getAllUsers()
             res.json(allUsers)
         } catch(e){
             next(e)
@@ -20,80 +20,24 @@ userRouter.get('/',  async (req:Request,res:Response,next:NextFunction)=>{
 })
 
 //find user by ID number
-userRouter.get('/:id', authorizationMiddleware(['admin', 'finance-manager']), (req:Request, res:Response)=>{//figure out how to do basically userId===userId
+userRouter.get('/:id', async (req:Request, res:Response, next: NextFunction)=>{//figure out how to do basically userId===userId
     let {id} = req.params
     if(isNaN(+id)){
         res.status(400).send('ID must be a number')
     } else {
-        let found = false
-        for(const user of users){
-            if(user.userId === +id){
-                res.json(user)
-                found = true
-            }
-        }
-        if(!found){
-            res.status(404).send('User Not Found')
+        try {
+            let user = await getUserById(+id)
+            res.json(user)
+        } catch (e) {
+            next(e)
         }
     }
 })
 
 //update user
-userRouter.patch('/', authorizationMiddleware(['admin']), authenticationMiddleware, (req: Request, res:Response)=>{
+/*userRouter.patch('/', (req: Request, res:Response)=>{
     const user = users.find(val => val.userId === Number(req.params.id));
     user.username = req.body.name;
     return res.json({message: "Updated"})
-})
+})*/
 
-//to be replaced later with a real database
-export let users:User[] =[
-    {
-        userId: 1,
-            username: 'admin123',
-            password: 'password', //passwords should be stronger than this in a real situation
-            firstName: 'Arthur',
-            lastName: 'Dent',
-            email: 'dent.arthur@earth.com',
-            role: {
-                roleId: 1,
-                role: `admin`
-            }
-
-    },
-    {
-        userId: 2,
-        username: 'improbable.tricia',
-        password: 'password', //passwords should be stronger than this in a real situation
-        firstName: 'Trillian',
-        lastName: 'Astra',
-        email: 't.astra@earth.com',
-        role: {
-            roleId: 2,
-            role: `finance-manager`
-        }
-    },
-    {
-        userId: 3,
-        username: 'frdprfct',
-        password: 'password', //passwords should be stronger than this in a real situation
-        firstName: 'Ford',
-        lastName: 'Prefect',
-        email: 'ford.prefect@betelgeuseV.com',
-        role: {
-            roleId: 3,
-            role: `employee`
-        }  
-    },
-    {
-        userId: 4,
-        username: 'presidentZ',
-        password: 'password', //passwords should be stronger than this in a real situation
-        firstName: 'Zaphod',
-        lastName: 'Beeblebrox',
-        email: 'president.beeblebrox@betelgeuseV.com',
-        role: {
-            roleId: 3,
-            role: `employee`
-        }  
-    }
-]
