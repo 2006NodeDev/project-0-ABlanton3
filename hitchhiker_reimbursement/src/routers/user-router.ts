@@ -9,8 +9,8 @@ export const userRouter = express.Router()
 userRouter.use(authenticationMiddleware)
 
 
-
-userRouter.get('/', authorizationMiddleware(['Admin, finance-manager']), async (req:Request,res:Response,next:NextFunction)=>{
+//get all users
+userRouter.get('/', authorizationMiddleware(['Admin', 'finance-manager']), async (req:Request,res:Response,next:NextFunction)=>{
         try{
             let allUsers = await getAllUsers()
             res.json(allUsers)
