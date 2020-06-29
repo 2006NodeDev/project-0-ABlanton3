@@ -1,4 +1,4 @@
-import { Role } from "../models/Role"
+import { Role } from '../models/Role'
 
 export class UserDTO {
     user_id:number

@@ -10,7 +10,7 @@ export async function getAllUsers(){
     let client:PoolClient
     try{
         client = await connectionPool.connect()
-        let results = await client.query(`select u.user_id, u.username , u."password" , u.first_name, u.last_name u.email ,r.role_id , r."role" from hitchhiker_reimbursement.users u left join hitchhiker_reimbursement.roles r on u."role" = r.role_id;`)
+        let results = await client.query(`select u.user_id, u.username , u."password" , u.first_name, u.last_name, u.email, r.role_id , r."role" from hitchhiker_reimbursement.users u left join hitchhiker_reimbursement.roles r on u."role" = r.role_id;`)
         return results.rows.map(UserDTOtoUserConvertor)
     }catch(e){ 
         console.log(e)

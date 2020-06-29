@@ -1,11 +1,11 @@
 import express, { Request, Response, NextFunction } from 'express'
-import {findByStatus, getReimbursementByUser} from '../daos/reimburement-dao'
+import {findByStatus, getReimbursementByUser} from '../daos/reimbursement-dao'
 
 export let reimbursementRouter = express.Router()
 
 
-reimbursementRouter.get('/:status', async (req: Request, res: Response, next:NextFunction) => {
-    let { status } = req.params
+reimbursementRouter.get('/status/:statusId', async (req: Request, res: Response, next:NextFunction) => {
+    let {status} = req.params
     if (isNaN(+status)) {
         next(new Error('Status ID must be a number'))
     } else {
@@ -18,7 +18,7 @@ reimbursementRouter.get('/:status', async (req: Request, res: Response, next:Nex
     }
 })
 
-reimbursementRouter.get('/:id', async (req: Request, res: Response, next:NextFunction) => {
+reimbursementRouter.get('/author/userId/:id', async (req: Request, res: Response, next:NextFunction) => {
     let { id } = req.params
     if (isNaN(+id)) {
         next(new Error('User ID must be a number'))

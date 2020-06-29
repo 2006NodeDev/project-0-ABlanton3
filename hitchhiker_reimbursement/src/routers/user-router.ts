@@ -10,7 +10,7 @@ userRouter.use(authenticationMiddleware)
 
 
 //get all users
-userRouter.get('/', authorizationMiddleware(['Admin', 'finance-manager']), async (req:Request,res:Response,next:NextFunction)=>{
+userRouter.get('/', authorizationMiddleware(['admin', 'finance-manager']), async (req:Request,res:Response,next:NextFunction)=>{
         try{
             let allUsers = await getAllUsers()
             res.json(allUsers)
@@ -20,7 +20,7 @@ userRouter.get('/', authorizationMiddleware(['Admin', 'finance-manager']), async
 })
 
 //find user by ID number
-userRouter.get('/:id', async (req:Request, res:Response, next: NextFunction)=>{//figure out how to do basically userId===userId
+userRouter.get('/:id', authorizationMiddleware(['admin', 'finance-manager']), async (req:Request, res:Response, next: NextFunction)=>{//figure out how to do basically userId===userId
     let {id} = req.params
     if(isNaN(+id)){
         res.status(400).send('ID must be a number')
