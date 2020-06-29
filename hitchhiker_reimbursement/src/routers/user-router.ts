@@ -2,7 +2,7 @@ import express, {Request, Response, NextFunction} from 'express'
 //import {User} from '../models/User'
 import {authenticationMiddleware} from '../middleware/authentication-middleware'
 import {authorizationMiddleware} from '../middleware/authorization-middleware'
-import { getAllUsers, getUserById } from '../daos/user-dao'
+import { getAllUsers, getUserById, updateUser } from '../daos/user-dao'
 
 export const userRouter = express.Router()
 
@@ -35,9 +35,13 @@ userRouter.get('/:id', authorizationMiddleware(['admin', 'finance-manager']), as
 })
 
 //update user
-/*userRouter.patch('/', (req: Request, res:Response)=>{
-    const user = users.find(val => val.userId === Number(req.params.id));
-    user.username = req.body.name;
-    return res.json({message: "Updated"})
-})*/
+userRouter.patch('/',authorizationMiddleware(['admin']), async (req: Request, res:Response)=>{
+    try {
+        const {body} = req;
+        const update = await updateUser(body);
+        res.status(200).json(update);
+    } catch (e) {
+        res.status(e.status).send(e.message);
+    }
+})
 

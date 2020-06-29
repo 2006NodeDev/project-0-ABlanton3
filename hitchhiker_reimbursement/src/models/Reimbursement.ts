@@ -4,7 +4,7 @@ export class Reimbursement{
       author: number  // foreign key -> User, not null
       amount: number  // not null
     dateSubmitted: number // not null
-    dateResolved: number // not null
+    dateResolved: number //nullable
     description: string // not null
     resolver: number // foreign key -> User
     status: number // foreign key -> ReimbursementStatus, not null

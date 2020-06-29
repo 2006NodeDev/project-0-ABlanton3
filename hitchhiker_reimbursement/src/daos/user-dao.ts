@@ -4,6 +4,7 @@ import { UserDTOtoUserConvertor } from "../utils/UserDTO-to-User-convertor";
 import { User } from "../models/User";
 import {InvalidCredentialsError} from "../errors/InvalidCredentialsError"
 import { UserNotFoundError } from "../errors/UserNotFoundError";
+//import { userRouter } from "../routers/user-router";
 
 
 export async function getAllUsers(){
@@ -79,5 +80,24 @@ export async function getUserByUsernameAndPassword(username:string, password:str
         throw new Error('Unhandled Error Occured')
     } finally {
         client && client.release()
+    }
+}
+
+export async function updateUser(newUser: User){
+    let client: PoolClient;
+    try{
+        client = await connectionPool.connect();
+        client.query('begin');
+        await client.query('update hitchhiker_reimbursement.users set username = $1, password = $2, first_name = $3, last_name $4, email = $5, where user_id =$6',
+            [newUser.username, newUser.password, newUser.firstName, newUser.lastName, newUser.email, newUser.userId]);
+        client.query('commit');
+    } catch (e) {
+        client.query('rollback')
+        throw {
+            status: 500,
+            message: 'Internal Server Error'
+        }
+    } finally {
+        client && client.release();
     }
 }

@@ -15,10 +15,3 @@ export function ReimbursementDTOtoReimbursementConvertor(r:ReimbursementDTO):Rei
         type: r.type
     }
 }
-
-export function MultipleReimbursementDTOtoReimbursementConvertor(r:ReimbursementDTO[]):Reimbursement[]{
-    let result = []
-    for (let reimbursement of r){
-        result.push(ReimbursementDTOtoReimbursementConvertor([reimbursement]))
-    }
-}

@@ -3,22 +3,14 @@ import {connectionPool} from ".";
 import { ReimbursementDTOtoReimbursementConvertor } from "../utils/ReimbursementDTo-to-Reimbursement";
 import { Reimbursement } from "../models/Reimbursement";
 import { UserNotFoundError } from "../errors/UserNotFoundError";
+import { ReimbursementNotFoundError } from "../errors/ReimbursementNotFound";
 
 //find by status
-
-export async function findByStatus(status: number):Promise<Reimbursement>{
+export async function findByStatus(status:number):Promise<Reimbursement[]>{
     let client : PoolClient
     try {
         client = await connectionPool.connect()
-        let results = await client.query(`select r.reimbursement_id, 
-                                        r.author, 
-                                        r.amount,
-                                        r.date_submitted,
-                                        r.date_resolved, 
-                                        r.description,
-                                        r.resolver, 
-                                        r.status,
-                                        r."type"
+        let results = await client.query(`select *
                                         from hitchhiker_reimbursement.reimbursements r left join hitchhiker_reimbursement.users u on r.author = u.user_id
                                         left join hitchhiker_reimbursement.reimbursement_statuses s on r.status = s.status_id
                                         left join hitchhiker_reimbursement.reimbursement_types t on r."type" = t.type_id
@@ -26,17 +18,21 @@ export async function findByStatus(status: number):Promise<Reimbursement>{
                                         order by r.date_submitted;`)
         if(results.rowCount = 0){
         throw new Error('Reimbursement not found')
-    }
-    return ReimbursementDTOtoReimbursementConvertor(results.rows[0]) //this doesn't feel right
+    }else {
+        return results.rows.map(ReimbursementDTOtoReimbursementConvertor)
+        }   
     } catch (e){
+        if(e.message === 'Reimbursement not found'){
+            throw new ReimbursementNotFoundError()
+        }
         throw new Error('Something has gone wrong. Don\'t panic.')
     } finally{
         client && client.release()
     }
 }
 
-
-export async function getReimbursementByUser(id: number):Promise<Reimbursement> { 
+//get by user
+export async function getReimbursementByUser(id: number):Promise<Reimbursement[]> { 
     let client: PoolClient
     try {
         client = await connectionPool.connect()
@@ -49,7 +45,7 @@ export async function getReimbursementByUser(id: number):Promise<Reimbursement> 
         if(results.rowCount === 0){
             throw new Error('User Not Found')
         }
-        return ReimbursementDTOtoReimbursementConvertor(results.rows) //This might only give me one row, so that's not ideal.
+        return results.rows.map(ReimbursementDTOtoReimbursementConvertor)
     } catch (e) {
         if(e.message === 'User Not Found'){
             throw new UserNotFoundError()
@@ -57,6 +53,28 @@ export async function getReimbursementByUser(id: number):Promise<Reimbursement> 
         console.log(e)
         throw new Error('Unhandled Error Occured')
     } finally {
+        client && client.release()
+    }
+}
+
+//submit a new reimbursement
+export async function newReimbursement(post){
+    let client:PoolClient
+    try{
+        client = await connectionPool.connect()
+        client.query('begin')
+        await client.query('insert into hitchhiker_reimbursement.reimbursements (author, amount, date_submitted, date_resolved, description, resolver, status_id, type_id) values ($1, $2, now(), $3, $4, $5, 2, 1, $5)',
+            [post.author, post.amount, post.date_submitted, post.description, post.type])
+        let result = await client.query('select * from hitchhiker_reimbursement.reimbursements where author $1 ORDER BY reimbursement_id desc limit 1 offset 0', [post.author])
+        client.query('commit')
+        return result.rows.map(ReimbursementDTOtoReimbursementConvertor)
+    } catch(e){
+        client.query('rollback')
+        throw{
+            status: 500,
+            message: 'Internal Server Error'
+        }
+    }finally{
         client && client.release()
     }
 }
