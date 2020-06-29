@@ -57,7 +57,7 @@ export async function getUserByUsernameAndPassword(username:string, password:str
     try {
         client = await connectionPool.connect()
         let results = await client.query(`select u.user_id, 
-                u.username", 
+                u."username", 
                 u."password" ,
                 u.first_name ,
                 u.last_name , 

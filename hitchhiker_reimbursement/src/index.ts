@@ -1,22 +1,23 @@
-import express, { Request, Response, NextFunction } from 'express'
+import express, { Request, Response, NextFunction, } from 'express'
 import { InvalidCredentialsError } from './errors/InvalidCredentialsError';
 import { userRouter } from './routers/user-router';
 import { sessionMiddleware } from './middleware/session-middleware';
 import { loggingMiddleware } from './middleware/logging-middleware';
 import { getUserByUsernameAndPassword } from './daos/user-dao';
-//import { authorizationMiddleware } from './middleware/authorization-middleware';
+import { reimbursementRouter } from './routers/reimbursement-router';
+
 
 const app = express()
 
-app.use(express.json)
+app.use(express.json())
 app.use(loggingMiddleware)
 app.use(sessionMiddleware)
 
 app.use('/users', userRouter)
+app.use('/reimbursements', reimbursementRouter)
 
-//do I want a reimbursements router?? something to ponder
 
-                               
+ //login                              
 app.post('/login', async (req:Request, res:Response, next:NextFunction)=>{
     let username = req.body.username
     let password = req.body.password
