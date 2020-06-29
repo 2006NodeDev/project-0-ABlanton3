@@ -40,16 +40,8 @@ export async function getReimbursementByUser(id: number):Promise<Reimbursement> 
     let client: PoolClient
     try {
         client = await connectionPool.connect()
-        let results = await client.query(`select r.reimbursement_id, 
-                r.author , 
-                r.amount ,
-                r.date_submitted,
-                r.date_resolved, 
-                r.description ,
-                r.resolver , 
-                r.status,
-                r.type
-                from hitchhiker_reimbursement.reimbursements r left join hitchhiker_reimbursement.users u on r.author = u.user_id
+        let results = await client.query(`select * from hitchhiker_reimbursement.reimbursements r 
+                left join hitchhiker_reimbursement.users u on r.author = u.user_id
                 left join hitchhiker_reimbursement.reimbursement_statuses s on r.status = s.status_id
                 left join hitchhiker_reimbursement.reimbursement_types t on r."type" = t.type_id
                 where r.author = ${id}
@@ -57,7 +49,7 @@ export async function getReimbursementByUser(id: number):Promise<Reimbursement> 
         if(results.rowCount === 0){
             throw new Error('User Not Found')
         }
-        return ReimbursementDTOtoReimbursementConvertor(results.rows[0]) //This might only give me one row, so that's not ideal.
+        return ReimbursementDTOtoReimbursementConvertor(results.rows) //This might only give me one row, so that's not ideal.
     } catch (e) {
         if(e.message === 'User Not Found'){
             throw new UserNotFoundError()
