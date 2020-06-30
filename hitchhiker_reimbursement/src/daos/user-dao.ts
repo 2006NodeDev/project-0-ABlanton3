@@ -4,6 +4,7 @@ import { UserDTOtoUserConvertor } from "../utils/UserDTO-to-User-convertor";
 import { User } from "../models/User";
 import {InvalidCredentialsError} from "../errors/InvalidCredentialsError"
 import { UserNotFoundError } from "../errors/UserNotFoundError";
+import { InputError } from "../errors/InputError";
 //import { userRouter } from "../routers/user-router";
 
 
@@ -83,21 +84,60 @@ export async function getUserByUsernameAndPassword(username:string, password:str
     }
 }
 
-export async function updateUser(newUser: User){
+export async function updateUser(updatedUser: User){
     let client: PoolClient;
     try{
         client = await connectionPool.connect();
         client.query('begin');
-        await client.query('update hitchhiker_reimbursement.users set username = $1, password = $2, first_name = $3, last_name $4, email = $5, where user_id =$6',
-            [newUser.username, newUser.password, newUser.firstName, newUser.lastName, newUser.email, newUser.userId]);
-        client.query('commit');
-    } catch (e) {
-        client.query('rollback')
-        throw {
-            status: 500,
-            message: 'Internal Server Error'
+        //it's not elegant but hopefully it's functional
+        if(updatedUser.username) {
+            await client.query(`update hitchhiker_reimbursement.users set "username" = $1 
+                                    where "user_id" = $2;`, 
+                                    [updatedUser.username, updatedUser.userId])
         }
+        if(updatedUser.password) {
+            await client.query(`update hitchhiker_reimbursement.users set "password" = $1 
+                                    where "user_id" = $2;`, 
+                                    [updatedUser.password, updatedUser.userId])
+        }
+        if(updatedUser.firstName) {
+            await client.query(`update hitchhiker_reimbursement.users set "first_name" = $1 
+                                    where "user_id" = $2;`, 
+                                    [updatedUser.firstName, updatedUser.userId])
+        }
+        if(updatedUser.lastName) {
+            await client.query(`update hitchhiker_reimbursement.users set "last_name" = $1 
+                                    where "user_id" = $2;`, 
+                                    [updatedUser.lastName, updatedUser.userId])
+        }
+        if(updatedUser.email) {
+            await client.query(`update hitchhiker_reimbursement.users set "email" = $1 
+                                    where "user_id" = $2;`, 
+                                    [updatedUser.email, updatedUser.userId])
+        }
+        if(updatedUser.role) {
+            let roleId = await client.query(`select r."role_id" from hitchhiker_reimbursement.roles r 
+                                        where r."role" = $1`,
+                                        [updatedUser.role])
+            if(roleId.rowCount === 0) {
+                throw new Error('Role Not Found')
+            }
+            roleId = roleId.rows[0].role_id
+            await client.query(`update hitchhiker_reimbursement.users set "role" = $1 
+                                    where "user_id" = $2;`, 
+                                    [roleId, updatedUser.userId])
+        }
+
+        await client.query('COMMIT;')
+        return updatedUser
+    } catch (e) {
+        client && client.query('ROLLBACK;')
+        if(e.message === 'Role Not Found') {
+            throw new InputError()
+        }
+        console.log(e);
+        throw new Error('Unhandled Error')
     } finally {
-        client && client.release();
+        client && client.release()
     }
 }

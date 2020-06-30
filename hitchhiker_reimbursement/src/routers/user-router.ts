@@ -3,6 +3,7 @@ import express, {Request, Response, NextFunction} from 'express'
 import {authenticationMiddleware} from '../middleware/authentication-middleware'
 import {authorizationMiddleware} from '../middleware/authorization-middleware'
 import { getAllUsers, getUserById, updateUser } from '../daos/user-dao'
+import { User } from '../models/User'
 
 export const userRouter = express.Router()
 
@@ -20,7 +21,7 @@ userRouter.get('/', authorizationMiddleware(['admin', 'finance-manager']), async
 })
 
 //find user by ID number
-userRouter.get('/:id', authorizationMiddleware(['admin', 'finance-manager']), async (req:Request, res:Response, next: NextFunction)=>{//figure out how to do basically userId===userId
+userRouter.get('/:id', authorizationMiddleware(['admin', 'finance-manager'/*still not sure how to let user search themselves*/]), async (req:Request, res:Response, next: NextFunction)=>{//figure out how to do basically userId===userId
     let {id} = req.params
     if(isNaN(+id)){
         res.status(400).send('ID must be a number')
@@ -35,13 +36,41 @@ userRouter.get('/:id', authorizationMiddleware(['admin', 'finance-manager']), as
 })
 
 //update user
-userRouter.patch('/',authorizationMiddleware(['admin']), async (req: Request, res:Response)=>{
-    try {
-        const {body} = req;
-        const update = await updateUser(body);
-        res.status(200).json(update);
-    } catch (e) {
-        res.status(e.status).send(e.message);
+userRouter.patch('/',authorizationMiddleware(['admin']), async (req: Request, res:Response, next:NextFunction)=>{
+    let { userId,
+        username,
+        password,
+        firstName,
+        lastName,
+        email,
+        role } = req.body
+    if(!userId) { 
+        res.status(400).send('Must have a User ID and at least one other field')
     }
-})
-
+    else if(isNaN(+userId)) { 
+        res.status(400).send('ID must be a number')
+    }
+    else {
+        let updatedUser:User = {
+            userId,
+            username,
+            password,
+            firstName,
+            lastName,
+            email,
+            role
+        }
+        updatedUser.username = username || undefined
+        updatedUser.password = password || undefined
+        updatedUser.firstName = firstName || undefined
+        updatedUser.lastName = lastName || undefined
+        updatedUser.email = email || undefined
+        updatedUser.role = role || undefined
+        try {
+            let result = await updateUser(updatedUser)
+            res.json(result)
+        } catch (e) {
+            next(e)
+        }
+    }
+}) 

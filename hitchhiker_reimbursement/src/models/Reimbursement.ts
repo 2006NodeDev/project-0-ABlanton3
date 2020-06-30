@@ -7,6 +7,6 @@ export class Reimbursement{
     dateResolved: number //nullable
     description: string // not null
     resolver: number // foreign key -> User
-    status: number // foreign key -> ReimbursementStatus, not null
+    status: number // foreign key -> ReimbursementStatus
     type: number // foreign key -> ReimbursementType
   }
