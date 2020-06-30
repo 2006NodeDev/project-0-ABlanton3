@@ -7,11 +7,12 @@ export function ReimbursementDTOtoReimbursementConvertor(r:ReimbursementDTO):Rei
         reimbursementId: r.reimbursement_id,
         author: r.author,
         amount: r.amount,
-        dateSubmitted: r.date_submitted.getFullYear(),
-        dateResolved: r.date_resolved.getFullYear(),
+        dateSubmitted: r.date_submitted,
+        dateResolved: r.date_resolved,
         description: r.description,
         resolver: r.resolver,
         status: r.status,
         type: r.type
     }
 }
+
