@@ -1,6 +1,6 @@
 import {PoolClient } from "pg";
 import {connectionPool} from ".";
-import { ReimbursementDTOtoReimbursementConvertor } from "../utils/ReimbursementDTo-to-Reimbursement";
+import { ReimbursementDTOtoReimbursementConvertor } from "../utils/ReimbursementDTO-to-Reimbursement";
 import { Reimbursement } from "../models/Reimbursement";
 import { UserNotFoundError } from "../errors/UserNotFoundError";
 import { ReimbursementNotFoundError } from "../errors/ReimbursementNotFound";
