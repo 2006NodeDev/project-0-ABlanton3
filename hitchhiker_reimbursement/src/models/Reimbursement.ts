@@ -3,8 +3,8 @@ export class Reimbursement{
     reimbursementId: number // primary key
       author: number  // foreign key -> User, not null
       amount: number  // not null
-    dateSubmitted: string// not null
-    dateResolved: string //nullable
+    dateSubmitted: Date// not null
+    dateResolved: Date //nullable
     description: string // not null
     resolver: number // foreign key -> User
     status: number // foreign key -> ReimbursementStatus

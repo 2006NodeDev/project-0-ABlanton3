@@ -38,20 +38,19 @@ reimbursementRouter.get('/author/userId/:id', async (req: Request, res: Response
 })
 
 //add new reimbursement
-reimbursementRouter.post('/', async (req:Request, res:Response, next:NextFunction) =>{
+reimbursementRouter.post('/', authorizationMiddleware(['admin', 'finance-manager']), async (req:Request, res:Response, next:NextFunction) =>{
     console.log(req.body);
     let{author,
         amount,
-        dateSubmitted,
         description,
         type} = req.body
 
-    if(author && amount && dateSubmitted && description && type){
+    if(author && amount && description && type){
         let newReimbursement: Reimbursement = {
             reimbursementId: 0,
             author,
             amount,
-            dateSubmitted, //does not like the way I do dates :(
+            dateSubmitted: new Date(), //does not like the way I do dates :(
             dateResolved: null,
             description,
             resolver: null,
@@ -71,27 +70,24 @@ reimbursementRouter.post('/', async (req:Request, res:Response, next:NextFunctio
 })
 
 //update reimbursement
-reimbursementRouter.patch('/', authorizationMiddleware(['Admin', 'Finance Manager']), async(req:Request, res:Response, next:NextFunction)=>{
+reimbursementRouter.patch('/', authorizationMiddleware(['admin', 'finance-manager']), async(req:Request, res:Response, next:NextFunction)=>{
     let { reimbursementId,
         author,
         amount,
-        dateSubmitted, //does not like the way I do dates :(
-        dateResolved, //does not like the way I do dates :(
+        dateSubmitted,
         description,
         resolver,
         status,
         type} = req.body
-    if(!reimbursementId){
+    if(!reimbursementId || isNaN(reimbursementId)){
         res.status(400).send('Must have Reimbursement ID and at least one other field.')
-    } else if(isNaN(+reimbursementId)){
-        res.status(400).send('ID must be a number')
-    } else {
+    } else if(status === "Approved" || status === "Denied"){
         let updatedReimbursement = {
             reimbursementId,
             author,
             amount,
-            dateSubmitted, //does not like the way I do dates :(
-            dateResolved, //does not like the way I do dates :(
+            dateSubmitted, 
+            dateResolved: new Date(), 
             description,
             resolver,
             status,
@@ -99,8 +95,6 @@ reimbursementRouter.patch('/', authorizationMiddleware(['Admin', 'Finance Manage
         } //there has to be a better way to do this bit, but I haven't a clue
         updatedReimbursement.author = author || undefined
         updatedReimbursement.amount = amount || undefined
-        updatedReimbursement.dateSubmitted = dateSubmitted || undefined //does not like the way I do dates :(
-        updatedReimbursement.dateResolved = dateResolved || undefined //does not like the way I do dates :(
         updatedReimbursement.description = description || undefined
         updatedReimbursement.resolver = resolver || undefined
         updatedReimbursement.status = status || undefined

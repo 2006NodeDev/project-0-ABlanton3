@@ -64,7 +64,7 @@ export async function submitReimbursement(newReimbursement:Reimbursement):Promis
     try{
         client = await connectionPool.connect()
         await client.query('BEGIN;')
-        let reimbursementType = await client.query(`select t.type_id from hitchhiker_reimbursement.reimbursement_types t where t."type" = $1;`, [newReimbursement.type])
+        let reimbursementType = await client.query(`select t.type_id from hitchhiker_reimbursement.reimbursement_types t where t.type_id = $1;`, [newReimbursement.type])
         if(reimbursementType.rowCount === 0){
             throw new Error('Type Not Found')
         }
@@ -92,7 +92,6 @@ export async function updateReimbursement(updatedReimbursement:Reimbursement):Pr
     try{
         client = await connectionPool.connect()
         await client.query('BEGIN')
-
         if (updatedReimbursement.author){
             let authorId = await client.query(`select u."user_id" from hitchhiker_reimbursement.users u
                             where u."user_id" = $1;`, [updatedReimbursement.author])
@@ -100,7 +99,7 @@ export async function updateReimbursement(updatedReimbursement:Reimbursement):Pr
                 throw new Error('Author not found')
             }
             authorId = authorId.rows[0].author
-            await client.query(`update hitchhiker_reimbursement.reimburemesnts set "author" = $1 where "reimbursement_id" = $2;`,
+            await client.query(`update hitchhiker_reimbursement.reimbursements set "author" = $1 where "reimbursement_id" = $2;`,
                                 [authorId, updatedReimbursement.reimbursementId])
         }
         if (updatedReimbursement.amount){
@@ -116,7 +115,7 @@ export async function updateReimbursement(updatedReimbursement:Reimbursement):Pr
                                 [updatedReimbursement.dateResolved, updatedReimbursement.reimbursementId])
         }
         if (updatedReimbursement.description){
-            await client.query(`update hitchhiker_reimbursement.reimburemesnts set "description" = $1 where "reimbursement_id" = $2;`,
+            await client.query(`update hitchhiker_reimbursement.reimbursements set "description" = $1 where "reimbursement_id" = $2;`,
                                 [updatedReimbursement.description, updatedReimbursement.reimbursementId])
         }
         if (updatedReimbursement.resolver){
@@ -126,7 +125,7 @@ export async function updateReimbursement(updatedReimbursement:Reimbursement):Pr
                 throw new Error('Resolver not found')
             }
             resolverId = resolverId.rows[0].resolver
-            await client.query(`update hitchhiker_reimbursement.reimburemesnts set "resolver" = $1 where "reimbursement_id" = $2;`,
+            await client.query(`update hitchhiker_reimbursement.reimbursements set "resolver" = $1 where "reimbursement_id" = $2;`,
                                 [resolverId, updatedReimbursement.reimbursementId])
         }
         if (updatedReimbursement.status){
@@ -136,18 +135,18 @@ export async function updateReimbursement(updatedReimbursement:Reimbursement):Pr
                 throw new Error('Status not found')
             }
             statusId = statusId.rows[0].status_id
-            await client.query(`update hitchhiker_reimbursement.reimburemesnts set "status" = $1 where "reimbursement_id" = $2;`,
+            await client.query(`update hitchhiker_reimbursement.reimbursements set "status" = $1 where "reimbursement_id" = $2;`,
                                 [statusId, updatedReimbursement.reimbursementId])
                             
         }
         if (updatedReimbursement.type){
-            let typeId = await client.query(`select s."type_id" from hitchhiker_reimbursement.reimbursement_typees s
+            let typeId = await client.query(`select s."type_id" from hitchhiker_reimbursement.reimbursement_types s
                             where s."type" = $1;`, [updatedReimbursement.type])
             if(typeId.rowCount === 0){
                 throw new Error('Type not found')
             }
             typeId = typeId.rows[0].type_id
-            await client.query(`update hitchhiker_reimbursement.reimburemesnts set "type" = $1 where "reimbursement_id" = $2;`,
+            await client.query(`update hitchhiker_reimbursement.reimbursements set "type" = $1 where "reimbursement_id" = $2;`,
                                 [typeId, updatedReimbursement.reimbursementId])
         }
 
@@ -155,7 +154,7 @@ export async function updateReimbursement(updatedReimbursement:Reimbursement):Pr
         return updatedReimbursement
     } catch (e) {
         client && client.query('ROLLBACK;')
-        if(e.message == 'Author Not Found' || 'Resolver Not Found' || 'Status Not Found' || 'Type Not Found'){
+        if(e.message == 'Reimbursement not found' || 'Author not nound' || 'Resolver not found' || 'Status not found' || 'Type not found'){
             throw new InputError()
         }
         console.log(e);
